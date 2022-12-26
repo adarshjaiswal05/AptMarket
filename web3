@@ -1,0 +1,272 @@
+var web3 = new Web3(window.ethereum);
+
+
+const ADDRESS = "0x6F5fd3ED739159aa6EF5D921Dc65B2485e367e0b"
+const ABI =[
+	{
+		"inputs": [],
+		"name": "acceptOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newAdmin",
+				"type": "address"
+			}
+		],
+		"name": "changeOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "tokenUri",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "mintAdmin",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "tokenUri",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "mintUser",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "contract APT721",
+				"name": "erc721",
+				"type": "address"
+			},
+			{
+				"internalType": "contract APT1155",
+				"name": "erc1155",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	}
+]
+contract = new web3.eth.Contract(ABI, ADDRESS);
+
+let sLogin = "no"
+
+async function loginWithMetaMask() {
+
+	let nId = await web3.eth.net.getId()
+	if (nId != 5) {
+		userWallet.innerText = "Invalid network please select gorel testnet to continue"
+		return console.log("invalid network please select gorel testnet to continue")
+	}
+
+	else {
+
+		const sAccounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+			.catch((e) => {
+				console.error(e.message)
+				return
+			})
+		console.log(sAccounts[0])
+		if (!sAccounts) { return }
+		else {
+
+
+			loginButton.innerText = 'Sign out of MetaMask'
+			userWallet.innerText = sAccounts[0]
+			loginButton.onclick = "signOutOfMetaMask()"
+
+			loginButton.removeEventListener('click', loginWithMetaMask)
+			setTimeout(() => {
+				loginButton.addEventListener('click', signOutOfMetaMask)
+			}, 200)
+		}
+		sLogin = "yes"
+	}
+}
+
+function signOutOfMetaMask() {
+	console.log("sign out called")
+
+	userWallet.innerText = ''
+	loginButton.innerText = 'Sign in with MetaMask'
+
+	loginButton.removeEventListener('click', signOutOfMetaMask)
+	setTimeout(() => {
+		loginButton.addEventListener('click', loginWithMetaMask)
+	}, 200)
+
+	sLogin = "no"
+}
+
+
+async function mintToken() {
+	if (sLogin == "no") {
+		mintTkn.innerText = "please login to continue";
+		return console.log("please login to continue")
+	}
+
+	try {
+		let sTokenUri = document.getElementById("tokenuri").value;
+		let nQuantity = document.getElementById("quantity").value;
+
+		// if (!checkInput(sAddress, mintTkn)) { return }
+		// if (!checkInput(nMetaData, mintTkn)) { return }
+		// if (!checkAmount(nMetaData, mintTkn)) { return }
+		// if (!checkAddress(sAddress, mintTkn)) { return }
+
+		 mintTkn.innerText = ""
+		let sAccounts = await web3.eth.getAccounts();
+		let sMsgsender = sAccounts[0];
+
+		let nGasUsed = await contract.methods.mintUser(sTokenUri, nQuantity)
+			.estimateGas({ from: sMsgsender })
+		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
+
+		contract.methods.mintUser(sTokenUri, nQuantity).send({ from: sMsgsender })
+			.on('transactionHash', function (sHash) {
+				if (window.confirm('Your transation hash is'+sHash +"press ok to visit the transation details on ether scan")) {
+					window.open(`https://rinkeby.etherscan.io/tx/${sHash}`);
+			   };
+		  }).on('receipt', function (receipt) {
+			  receiptStatus(receipt);
+		  })
+		  .catch(function (err) {
+			  alert(err.message)
+		  }
+		  )
+
+	}	 catch (err) {
+		console.log(err)
+	}
+}
+
+
+
+
+
+// function error(error) {
+// 	error = error.toString();
+// 	let sObjError = error.substring(error.indexOf("{"), error.lastIndexOf("}") + 1);
+// 	sObjError = JSON.parse(sObjError)
+// 	let sErrorMsg = sObjError.originalError.message;
+// 	let sErrMessage = sErrorMsg.substring(sErrorMsg.indexOf(":") + 1, sErrorMsg.length);
+// 	alert(sErrMessage)
+// }
+
+
+async function checkChange() {
+	window.ethereum.on('accountsChanged', function (sAccounts) {
+		console.log('accountsChanged', sAccounts);
+		alert("Account Changed");
+		location.reload(true);
+		userWallet.innerText = sAccounts;
+	});
+	window.ethereum.on('chainChanged', function (nNetworkId) {
+		console.log('chainChanged', nNetworkId);
+		alert("chain Changed");
+		location.reload(true);
+	});
+
+}
+
+function checkAddress(sAddress, sErrorId) {
+	if (!web3.utils.isAddress(sAddress)) {
+		console.log('invalid address')
+		sErrorId.innerText = "invalid address"
+		return false
+	}
+	else { return true }
+}
+
+function checkInput(sInput, sErrorId) {
+	if (sInput.length == 0) {
+		console.log("empty parameter sent")
+		sErrorId.innerText = "empty parameter sent"
+		return false
+	}
+	else { return true }
+}
+
+
+function checkAmount(nAmount, sErrorId) {
+	if (nAmount <= 0) {
+		console.log("inavalid amount")
+		sErrorId.innerText = "inavalid amount"
+		return false
+	}
+	else { return true }
+}
+
+
+
+async function checkMetamask() {
+	let sAccount = await web3.eth.getAccounts();
+	if (sAccount.length == 0) return alert("metaMask not connected")
+}
+
+function loginCheck() {
+	if (sLogin == "no") {
+		console.log("please login to continue")
+		return false
+	}
+	else { return true }
+}
+
+checkChange();
+
+function receiptStatus(receipt){
+	if (receipt.status == true) {
+		alert(`You have approved ${sSpender} the amount of ${nAmount} token`);
+		console.log(receipt)
+	} else {
+		alert('Transaction reverted due to some technical issues.')
+	}
+}
+
+
+function receiptStatus(receipt){
+	if (receipt.status == true) {
+		alert(`You have approved ${sSpender} the amount of ${nAmount} token`);
+		console.log(receipt)
+	} else {
+		alert('Transaction reverted due to some technical issues.')
+	}
+}
+
+
+
+
