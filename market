@@ -1,0 +1,170 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity ^0.8.1;
+
+import "./APT721.sol";
+
+import "./APT1155.sol";
+
+contract CommonMarket  {
+
+    struct AssetDetails {
+        uint256 tokenType;
+        string url;
+        uint256 biddingPrice;
+        uint256 salePrice;
+        uint256 quantityOnSale;
+        uint256 quantityOnBidding;
+        uint256 remainingQuantity;
+    }
+
+    APT721 private _erc721;
+    APT1155 private _erc1155;
+    address private _admin;
+    address private _pendingAdmin;
+    uint256 private tokenId721=0;
+    uint256 private tokenId1155=0;
+    
+    mapping(string => bool) private _uriExist;
+
+    mapping(uint256 => AssetDetails) private _assetId721;
+
+    mapping(uint256 => AssetDetails) private _assetId1155;
+
+    constructor(APT721 erc721, APT1155 erc1155) {
+        //chechking address zero
+        require(erc721 != APT721(address(0)), "APT_Market:zero address sent");
+        require(erc1155 != APT1155(address(0)), "APT_Market:zero address sent");
+        //setting admin to message sender
+        _admin = msg.sender;
+        _erc721 = erc721;
+        _erc1155 = erc1155;
+        //setting the market place address in the ERC721 and ERC1155 contract
+        _erc721.setMarketAddress();
+        _erc1155.setMarketAddress();
+    }
+
+    function mintAdmin(
+        address to,
+        string memory tokenUri,
+        uint256 quantity
+    ) external {
+        require(msg.sender==_admin ,"APT_Market: Only admin is allowed to mint");
+        require(quantity>0, "APT_Market: Invalid quantity");
+        require( !_uriExist[tokenUri] ,"APT_Market: Token uri already exists");
+        
+        // uint token;
+
+        if (quantity==1) {
+            tokenId721++;
+            _erc721.mint(to,tokenUri,tokenId721);
+
+        } else {
+            tokenId1155++;
+           _erc1155.mint(to, quantity,tokenUri,tokenId1155);
+        }
+        _uriExist[tokenUri]=true;
+    }
+
+
+    function mintUser(
+        string memory tokenUri,
+        uint256 quantity
+        )
+        external {
+            require(quantity>0, "APT_Market:Invalid quantity");
+            require( !_uriExist[tokenUri] ,"APT_Market:Token uri already exists");
+            // uint token;
+            
+        AssetDetails memory newAsset;
+     
+            if (quantity==1) {        
+            tokenId721++;
+            _erc721.mint(msg.sender,tokenUri,tokenId721);
+            newAsset.url = tokenUri;
+            newAsset.remainingQuantity = quantity;
+            _assetId721[tokenId721] = newAsset;
+
+            } else {
+                tokenId1155++;
+                _erc1155.mint(msg.sender, quantity,tokenUri,tokenId1155);
+                newAsset.url = tokenUri;
+                newAsset.remainingQuantity = quantity;
+                _assetId1155[tokenId1155] = newAsset;
+            }
+            _uriExist[tokenUri]=true;        
+        }
+
+
+
+    function setOnSale(
+        uint256 tokenId,
+        uint256 price,
+        uint256 quantity
+    ) external {
+
+        require(price > 0, "please set a valid price");
+
+        require( _assetId721[tokenId].tokenType == 0 && _assetId1155[tokenId].tokenType == 0 , "invalid token ID");
+        
+        if(_assetId721[tokenId].tokenType == 721) {
+            //this means that token type is 721
+            require(_assetId721[tokenId].quantityOnSale != 0,"sale created alredy ");
+            require(
+                quantity <= _assetId721[tokenId].remainingQuantity,
+                "No enough tokens left for sale"
+            );
+            require(quantity == 1, "only one token available for type 721");
+
+        _assetId721[tokenId].quantityOnSale += quantity;
+        _assetId721[tokenId].remainingQuantity -= quantity;
+        _assetId721[tokenId].salePrice = price;
+
+        }else {
+            //this means that token type is 1155
+            require(_assetId1155[tokenId].quantityOnSale != 0,"sale created alredy ");
+            
+            require(
+                quantity <= _assetId1155[tokenId].remainingQuantity,
+                "No enough tokens left for sale"
+            );
+            require(
+                _erc1155.balanceOf(msg.sender, tokenId) >= quantity,
+                "Owner dosent have enough tokens "
+            );
+            
+        _assetId1155[tokenId].quantityOnSale += quantity;
+        _assetId1155[tokenId].remainingQuantity -= quantity;
+        _assetId1155[tokenId].salePrice = price;
+        } 
+    }
+
+
+    function onlyOwner(
+        uint256 tokenType,
+        uint256 tokenId,
+        address owner
+    ) private view {
+        if (tokenType == 721) {
+            require(_erc721.ownerOf(tokenId) == owner, "invalid owner");
+        } else if (tokenType == 1155) {
+            require(
+                _erc1155.balanceOf(owner, tokenId) != 0,
+                "wrong owner, token type or token id"
+            );
+        }
+    }
+
+
+
+    function changeOwnership(address newAdmin)external {
+        require(msg.sender==_admin,"APT_Market:Only admin is allowed to call this function");
+        _pendingAdmin=newAdmin;  
+    }
+
+    function acceptOwnership()external {
+        require(msg.sender==_pendingAdmin,"APT_Market:You are forbidden to call");
+        _admin=_pendingAdmin;
+    }
+
+    }
