@@ -26,10 +26,10 @@ contract CommonMarket  {
     uint256 private tokenId1155=0;
     
     mapping(string => bool) private _uriExist;
-
-    mapping(uint256 => AssetDetails) private _assetId721;
-
-    mapping(uint256 => AssetDetails) private _assetId1155;
+//do it private
+    mapping(uint256 => AssetDetails) public _assetId721;
+//do it private
+    mapping(uint256 => AssetDetails) public _assetId1155;
 
     constructor(APT721 erc721, APT1155 erc1155) {
         //chechking address zero
@@ -79,15 +79,17 @@ contract CommonMarket  {
         AssetDetails memory newAsset;
      
             if (quantity==1) {        
-            tokenId721++;
-            _erc721.mint(msg.sender,tokenUri,tokenId721);
-            newAsset.url = tokenUri;
-            newAsset.remainingQuantity = quantity;
-            _assetId721[tokenId721] = newAsset;
+             tokenId721++;
+             _erc721.mint(msg.sender,tokenUri,tokenId721);
+             newAsset.tokenType = 721;
+             newAsset.url = tokenUri;
+             newAsset.remainingQuantity = quantity;
+             _assetId721[tokenId721] = newAsset;
 
             } else {
                 tokenId1155++;
                 _erc1155.mint(msg.sender, quantity,tokenUri,tokenId1155);
+                newAsset.tokenType = 1155;
                 newAsset.url = tokenUri;
                 newAsset.remainingQuantity = quantity;
                 _assetId1155[tokenId1155] = newAsset;
@@ -105,16 +107,16 @@ contract CommonMarket  {
 
         require(price > 0, "please set a valid price");
 
-        require( _assetId721[tokenId].tokenType == 0 && _assetId1155[tokenId].tokenType == 0 , "invalid token ID");
+        require( _assetId721[tokenId].tokenType == 721 || _assetId1155[tokenId].tokenType == 1155 , "invalid token ID");
         
         if(_assetId721[tokenId].tokenType == 721) {
             //this means that token type is 721
-            require(_assetId721[tokenId].quantityOnSale != 0,"sale created alredy ");
+            require(_assetId721[tokenId].quantityOnSale == 0,"721:sale created alredy ");
             require(
                 quantity <= _assetId721[tokenId].remainingQuantity,
-                "No enough tokens left for sale"
+                "721:No enough tokens left for sale"
             );
-            require(quantity == 1, "only one token available for type 721");
+            require(quantity == 1, "721:only one token available for type 721");
 
         _assetId721[tokenId].quantityOnSale += quantity;
         _assetId721[tokenId].remainingQuantity -= quantity;
@@ -122,17 +124,17 @@ contract CommonMarket  {
 
         }else {
             //this means that token type is 1155
-            require(_assetId1155[tokenId].quantityOnSale != 0,"sale created alredy ");
+            require(_assetId1155[tokenId].quantityOnSale == 0,"1155:sale created alredy ");
             
             require(
                 quantity <= _assetId1155[tokenId].remainingQuantity,
-                "No enough tokens left for sale"
+                "1155:No enough tokens left for sale"
             );
             require(
                 _erc1155.balanceOf(msg.sender, tokenId) >= quantity,
-                "Owner dosent have enough tokens "
+                "1155:Owner dosent have enough tokens "
             );
-            
+
         _assetId1155[tokenId].quantityOnSale += quantity;
         _assetId1155[tokenId].remainingQuantity -= quantity;
         _assetId1155[tokenId].salePrice = price;
