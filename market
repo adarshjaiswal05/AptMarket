@@ -25,11 +25,15 @@ contract CommonMarket  {
     uint256 private tokenId721=0;
     uint256 private tokenId1155=0;
     
-    mapping(string => bool) private _uriExist;
+    mapping(string => uint) public _uriId;
 //do it private
     mapping(uint256 => AssetDetails) public _assetId721;
 //do it private
     mapping(uint256 => AssetDetails) public _assetId1155;
+
+    mapping(address => uint256) public  _addressAccumlatedAmount;
+
+    event BoughtNFT(uint256 tokenId, address buyer);
 
     constructor(APT721 erc721, APT1155 erc1155) {
         //chechking address zero
@@ -51,19 +55,21 @@ contract CommonMarket  {
     ) external {
         require(msg.sender==_admin ,"APT_Market: Only admin is allowed to mint");
         require(quantity>0, "APT_Market: Invalid quantity");
-        require( !_uriExist[tokenUri] ,"APT_Market: Token uri already exists");
+        require( _uriId[tokenUri] !=0 ,"APT_Market: Token uri already exists");
         
         // uint token;
 
         if (quantity==1) {
             tokenId721++;
             _erc721.mint(to,tokenUri,tokenId721);
+            _uriId[tokenUri]=tokenId721;
 
         } else {
             tokenId1155++;
            _erc1155.mint(to, quantity,tokenUri,tokenId1155);
+           _uriId[tokenUri]=tokenId1155;
         }
-        _uriExist[tokenUri]=true;
+        
     }
 
 
@@ -73,7 +79,7 @@ contract CommonMarket  {
         )
         external {
             require(quantity>0, "APT_Market:Invalid quantity");
-            require( !_uriExist[tokenUri] ,"APT_Market:Token uri already exists");
+            require( _uriId[tokenUri] == 0 ,"APT_Market: Token uri already exists");
             // uint token;
             
         AssetDetails memory newAsset;
@@ -85,6 +91,7 @@ contract CommonMarket  {
              newAsset.url = tokenUri;
              newAsset.remainingQuantity = quantity;
              _assetId721[tokenId721] = newAsset;
+             _uriId[tokenUri]=tokenId721;
 
             } else {
                 tokenId1155++;
@@ -93,23 +100,25 @@ contract CommonMarket  {
                 newAsset.url = tokenUri;
                 newAsset.remainingQuantity = quantity;
                 _assetId1155[tokenId1155] = newAsset;
+                _uriId[tokenUri]=tokenId1155;
             }
-            _uriExist[tokenUri]=true;        
+            
         }
 
 
 
     function setOnSale(
-        uint256 tokenId,
+        string memory tokenUri,
         uint256 price,
         uint256 quantity
     ) external {
+        uint256 tokenId= _uriId[tokenUri];
 
         require(price > 0, "please set a valid price");
-
-        require( _assetId721[tokenId].tokenType == 721 || _assetId1155[tokenId].tokenType == 1155 , "invalid token ID");
         
-        if(_assetId721[tokenId].tokenType == 721) {
+        require( _assetId721[tokenId].tokenType == 721 || _assetId1155[tokenId].tokenType == 1155 , "invalid token URI");
+        
+        if(keccak256(abi.encodePacked((_assetId721[tokenId].url))) == keccak256(abi.encodePacked((tokenUri)))) {
             //this means that token type is 721
             require(_assetId721[tokenId].quantityOnSale == 0,"721:sale created alredy ");
             require(
@@ -141,6 +150,104 @@ contract CommonMarket  {
         } 
     }
 
+     function removeFromSale( string memory tokenUri) external {
+         uint256 tokenId= _uriId[tokenUri];
+          require( _assetId721[tokenId].tokenType == 721 || _assetId1155[tokenId].tokenType == 1155 , "invalid token URI");
+              if(keccak256(abi.encodePacked((_assetId721[tokenId].url))) == keccak256(abi.encodePacked((tokenUri)))) {
+                require(_assetId721[tokenId].quantityOnSale != 0,"721:No sale found");
+                 onlyOwner(721 , tokenId, msg.sender);
+                _assetId721[tokenId].remainingQuantity += _assetId721[tokenId].quantityOnSale;
+                _assetId721[tokenId].quantityOnSale = 0;
+                _assetId721[tokenId].salePrice  = 0;
+
+              }else{
+                require(_assetId1155[tokenId].quantityOnSale != 0,"721:No sale found");
+                 onlyOwner(1155 , tokenId, msg.sender);
+                _assetId1155[tokenId].remainingQuantity += _assetId1155[tokenId].quantityOnSale;
+                _assetId1155[tokenId].quantityOnSale = 0;
+                _assetId1155[tokenId].salePrice  = 0;
+              }
+
+    }
+
+
+      //reentracy attack proof
+    function buyImage(
+        address owner,
+        string memory tokenUri
+    ) external payable {
+        uint tokenId=_uriId[tokenUri];
+        require( _assetId721[tokenId].tokenType == 721 || _assetId1155[tokenId].tokenType == 1155 , "invalid token ID");
+           
+           if(keccak256(abi.encodePacked((_assetId721[tokenId].url))) == keccak256(abi.encodePacked((tokenUri)))) {
+            uint256 saleQuantity = _assetId721[tokenId].quantityOnSale;
+            require(saleQuantity != 0, "This token has not been listed on sale");
+            require(
+            msg.value == _assetId721[tokenId].salePrice+500,
+            "please enter valid price to buy nft "
+             );
+
+            saleQuantityCheck721(tokenId);
+            _addressAccumlatedAmount[owner] += msg.value;
+            _sendERC721(owner, msg.sender, tokenId);
+
+           }
+           else{
+            uint256 saleQuantity = _assetId1155[tokenId].quantityOnSale;
+            require(saleQuantity != 0, "This token has not been listed on sale");
+            require(
+            msg.value == _assetId1155[tokenId].salePrice,
+            "please enter valid price to buy nft "
+             );
+             saleQuantityCheck1155(tokenId);
+            _addressAccumlatedAmount[owner] += msg.value; 
+            _sendERC1155(owner, msg.sender, tokenId, saleQuantity);
+           }
+           
+        emit BoughtNFT(tokenId, msg.sender);
+
+        }
+
+    function withdrawAccumlatedAmount(uint256 amount) external {
+        require(amount > 0, "Please withdraw some amount");
+        require(
+            _addressAccumlatedAmount[msg.sender] >= amount,
+            "you have entered wrong amount"
+        );
+        _addressAccumlatedAmount[msg.sender] -= amount;
+        payable(msg.sender).transfer(amount);
+    }
+      
+   
+    function saleQuantityCheck721(uint256 tokenId) private {
+        //this is for reentrency data updating
+        if (
+            _assetId721[tokenId].remainingQuantity +
+                _assetId721[tokenId].quantityOnBidding ==
+            0
+        ) {
+            delete _assetId721[tokenId];
+        } else {
+            _assetId721[tokenId].quantityOnSale = 0;
+            _assetId721[tokenId].salePrice =0;
+        }
+    }
+
+    function saleQuantityCheck1155(uint256 tokenId) private {
+        //this is for reentrency data updating
+        if (
+            _assetId1155[tokenId].remainingQuantity +
+                _assetId1155[tokenId].quantityOnBidding ==
+            0
+        ) {
+            delete _assetId1155[tokenId];
+        } else {
+            _assetId1155[tokenId].quantityOnSale = 0;
+             _assetId1155[tokenId].salePrice=0;
+         }
+    }
+    
+
 
     function onlyOwner(
         uint256 tokenType,
@@ -169,4 +276,19 @@ contract CommonMarket  {
         _admin=_pendingAdmin;
     }
 
+    function _sendERC721(
+        address owner,
+        address to,
+        uint256 tokenId
+    ) private {
+        _erc721.safeTransferFrom(owner, to, tokenId);
+    }
+    function _sendERC1155(
+        address owner,
+        address to,
+        uint256 tokenId,
+        uint256 quantity
+    ) private {
+        _erc1155.safeTransferFrom(owner, to, tokenId, quantity, "");
+    }
     }
