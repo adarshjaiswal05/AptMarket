@@ -10,7 +10,7 @@
       integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
       crossorigin="anonymous"
     />
-    <title>ERC721 Smart Contract</title>
+    <title>APT Market place </title>
   </head>
   <body>
     <div>
@@ -25,6 +25,94 @@
     </div>
 
   </div>
+
+  <div>
+    <br>
+    <h5 >Get 721 AssetDetails </h5>
+    <label  class="form-label">Wallet Address</label>
+    <input
+    type="text"
+    class="form-control"
+    id="details721ofaddress" 
+  />
+  <p></p>
+    <button type="button" class="btn btn-primary" id="getbalance" onclick="asset721Details()">GetDetails</button>
+    <p id='getdetails721' class='text-lg text-gray-600 my-2'></p>
+</div>
+
+</div>
+
+<div>
+  <br>
+  <h5 >Get 1155 AssetDetails </h5>
+  <label  class="form-label">Wallet Address</label>
+  <input
+  type="text"
+  class="form-control"
+  id="details1155ofaddress" 
+/>
+<p></p>
+  <button type="button" class="btn btn-primary" id="getbalance" onclick="asset1155Details()">GetDetails</button>
+  <p id='getdetails1155' class='text-lg text-gray-600 my-2'></p>
+</div>
+
+</div>
+
+</div>
+
+
+<div>
+  <br>
+  <h5 >Get NFt Id </h5>
+  <label  class="form-label">Token Uri</label>
+  <input
+  type="text"
+  class="form-control"
+  id="URI" 
+/>
+<p></p>
+  <button type="button" class="btn btn-primary" id="getbalance" onclick="getId()">Get</button>
+  <p id='getdetails1155' class='text-lg text-gray-600 my-2'></p>
+</div>
+
+</div>
+
+</div>
+
+<div>
+  <br>
+  <h5 >Get 721 Market Address </h5>
+  
+  <button type="button" class="btn btn-primary" id="getbalance" onclick="getMarket721()">Get</button>
+  <p id='MarketAddress' class='text-lg text-gray-600 my-2'></p>
+</div>
+
+</div>
+
+<div>
+  <br>
+  <h5 >Get 1155 Market Address </h5>
+  
+  <button type="button" class="btn btn-primary" id="getbalance" onclick="getMarket1155()">Get</button>
+  <p id='MarketAddress' class='text-lg text-gray-600 my-2'></p>
+</div>
+
+</div>
+
+
+<div>
+  <br>
+  <h5 >Get Stored balance in MarketPlace </h5>
+  <label  class="form-label">Wallet Address</label>
+  <input
+  type="text"
+  class="form-control"
+  id="wallet" 
+/>
+<p></p>
+  <button type="button" class="btn btn-primary" id="getbalance" onclick="getBalance()">Get</button>
+  <p id='getdetails1155' class='text-lg text-gray-600 my-2'></p>
+</div>
 
 
                                        <!-- minttoken -->
@@ -56,9 +144,115 @@
       </div>
       <div>
         <br>
-        
-        
+
+
+    <!--                   Set on Sale                           -->
+    <div>
+      <div>
+          <h5  class="form-label">Set on sale</h5>
+          <br>
+          <label  class="form-label">Token URI</label>
+          <input
+            type="text"
+            class="form-control"
+            id="TokenUri"
+            aria-describedby="emailHelp"
+          />
+          <div id="emailHelp" class="form-text">
+           
+      </div>
+      <div id="emailHelp" class="form-text">
+       
+      </div>
+      <div>
+          <label  class="form-label">Price</label>
+          <input
+            type="number"
+            class="form-control"
+            id="Price"
+            aria-describedby="emailHelp"
+          />
+          <div id="emailHelp" class="form-text">
+           
+      </div>
+      <div id="emailHelp" class="form-text">
+       
+      </div>
   
+          <div class="mb-3">
+              <label for="exampleInputPassword1" class="form-label" >Quantity</label>
+              <input
+               type="number"
+                class="form-control"
+                id="Quantity"
+              />
+              <br>
+      
+              <button type="button" class="btn btn-primary"onclick="setOnSale()">SetONSale</button>
+              <p id='setOnSale' class='text-lg text-gray-600 my-2'></p>
+          </div>
+
+    </div>
+
+               <!--            appprove721        -->
+         <p></p>>
+        <button type="button" class="btn btn-primary"onclick="approve721()">Approve Spender 721</button>
+       <p id='approve' class='text-lg text-gray-600 my-2'></p>
+      </div>
+      </div>
+
+          <!--            appprove1155        -->
+          <p></p>>
+            <button type="button" class="btn btn-primary"onclick="approve1155()">Approve Spender 1155</button>
+            <p id='approve' class='text-lg text-gray-600 my-2'></p>
+          </div>
+        </div>
+
+         <!-- buy Nft -->
+         <h5 class="form-label">Buy NFT</h5>
+         <br>
+         <div class="mb-3">
+         <label  class="form-label">URI</label>
+         <input
+           type="text"
+           class="form-control"
+           id="owner"
+           aria-describedby="emailHelp"
+         />
+         <div id="emailHelp" class="form-text">
+
+          <div class="mb-3">
+            <label  class="form-label">Owner</label>
+            <input
+              type="text"
+              class="form-control"
+              id="oowner"
+              aria-describedby="emailHelp"
+            />
+            <div id="emailHelp" class="form-text">
+
+          <div class="mb-3">
+            <label for="exampleInputPassword1" class="form-label" >Amount</label>
+            <input
+             type="number"
+              class="form-control"
+              id="Amount"
+            />
+            <br>
+          
+         </div>
+       
+         <button type="button" class="btn btn-primary"onclick="buyNft()">Mint Tokens</button>
+         <p id='mintTkn' class='text-lg text-gray-600 my-2'></p>
+       </div>
+       <div>
+         <br>
+ 
+  
+
+     
+        
+        
       </div>
     </form>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.5/web3.min.js"></script>
