@@ -1321,6 +1321,38 @@ async function getBalance(){
 	}
 }
 
+async function isApproved721(){
+
+	let sAccounts = await web3.eth.getAccounts();
+	let sOwner = sAccounts[0];
+	let sMarket = await getMarket721();
+	try {
+		// var sAddress = document.getElementById("wallet").value;
+		contract721.methods.isApprovedForAll(sOwner,sMarket).call(function (err, status) {
+			console.log(status)
+			return status
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+async function isApproved1155(){
+
+	let sAccounts = await web3.eth.getAccounts();
+	let sOwner = sAccounts[0];
+	let sMarket = await getMarket1155();
+	try {
+		// var sAddress = document.getElementById("wallet").value;
+		contract721.methods.isApprovedForAll(sOwner,sMarket).call(function (err, status) {
+			console.log(status)
+			return status
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 
 
 async function approve721(){
