@@ -1,0 +1,28 @@
+async function removeFromSale(uri) {
+
+	try {
+		let sAccounts = await web3.eth.getAccounts();
+		let sMsgsender = sAccounts[0];
+
+		let nGasUsed = await contractMarket.methods.removeFromSale(uri)
+			.estimateGas({ from: sMsgsender })
+		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
+
+		await contractMarket.methods.removeFromSale(uri)
+			.send({ from: sMsgsender })
+			.on('transactionHash', function (sHash) {
+				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
+					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
+				};
+			}).on('receipt', function (receipt) {
+				receiptStatus(receipt);
+			})
+			.catch(function (err) {
+				alert(err.message)
+			}
+			)
+
+	} catch (err) {
+		console.log(err)
+	}
+}
