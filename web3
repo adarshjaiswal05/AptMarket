@@ -1,87 +1,1094 @@
 var web3 = new Web3(window.ethereum);
 
+	let contract721;
+	const ADDRESS721 = "0x73B78FF4F019a447A76F85c06A2963db6d96Be95"
+	const ABI721 = [
+		{
+			"inputs": [],
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "owner",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "approved",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "Approval",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "owner",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "operator",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "bool",
+					"name": "approved",
+					"type": "bool"
+				}
+			],
+			"name": "ApprovalForAll",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "Transfer",
+			"type": "event"
+		},
+		{
+			"inputs": [],
+			"name": "admin",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "approve",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "owner",
+					"type": "address"
+				}
+			],
+			"name": "balanceOf",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "getApproved",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "owner",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "operator",
+					"type": "address"
+				}
+			],
+			"name": "isApprovedForAll",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "market",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "tokenURI",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "mint",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "name",
+			"outputs": [
+				{
+					"internalType": "string",
+					"name": "",
+					"type": "string"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "ownerOf",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "safeTransferFrom",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				},
+				{
+					"internalType": "bytes",
+					"name": "data",
+					"type": "bytes"
+				}
+			],
+			"name": "safeTransferFrom",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "operator",
+					"type": "address"
+				},
+				{
+					"internalType": "bool",
+					"name": "approved",
+					"type": "bool"
+				}
+			],
+			"name": "setApprovalForAll",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "setMarketAddress",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "bytes4",
+					"name": "interfaceId",
+					"type": "bytes4"
+				}
+			],
+			"name": "supportsInterface",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "symbol",
+			"outputs": [
+				{
+					"internalType": "string",
+					"name": "",
+					"type": "string"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "tokenURI",
+			"outputs": [
+				{
+					"internalType": "string",
+					"name": "",
+					"type": "string"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "transferFrom",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	]
+	contract721 = new web3.eth.Contract(ABI721, ADDRESS721);
 
-const ADDRESS = "0x6F5fd3ED739159aa6EF5D921Dc65B2485e367e0b"
-const ABI =[
-	{
-		"inputs": [],
-		"name": "acceptOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newAdmin",
-				"type": "address"
-			}
-		],
-		"name": "changeOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "tokenUri",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "quantity",
-				"type": "uint256"
-			}
-		],
-		"name": "mintAdmin",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "tokenUri",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "quantity",
-				"type": "uint256"
-			}
-		],
-		"name": "mintUser",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "contract APT721",
-				"name": "erc721",
-				"type": "address"
-			},
-			{
-				"internalType": "contract APT1155",
-				"name": "erc1155",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	}
-]
-contract = new web3.eth.Contract(ABI, ADDRESS);
+
+
+	let contract1155;
+	const ADDRESS1155 = "0x96dD14C42a54506811f7075BB6C3bacCdB0D4256"
+	const ABI1155 = [
+		{
+			"inputs": [],
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "account",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "operator",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "bool",
+					"name": "approved",
+					"type": "bool"
+				}
+			],
+			"name": "ApprovalForAll",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "operator",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256[]",
+					"name": "ids",
+					"type": "uint256[]"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256[]",
+					"name": "values",
+					"type": "uint256[]"
+				}
+			],
+			"name": "TransferBatch",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "operator",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "id",
+					"type": "uint256"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "value",
+					"type": "uint256"
+				}
+			],
+			"name": "TransferSingle",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"internalType": "string",
+					"name": "value",
+					"type": "string"
+				},
+				{
+					"indexed": true,
+					"internalType": "uint256",
+					"name": "id",
+					"type": "uint256"
+				}
+			],
+			"name": "URI",
+			"type": "event"
+		},
+		{
+			"inputs": [],
+			"name": "admin",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "account",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "id",
+					"type": "uint256"
+				}
+			],
+			"name": "balanceOf",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address[]",
+					"name": "accounts",
+					"type": "address[]"
+				},
+				{
+					"internalType": "uint256[]",
+					"name": "ids",
+					"type": "uint256[]"
+				}
+			],
+			"name": "balanceOfBatch",
+			"outputs": [
+				{
+					"internalType": "uint256[]",
+					"name": "",
+					"type": "uint256[]"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "account",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "operator",
+					"type": "address"
+				}
+			],
+			"name": "isApprovedForAll",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "market",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "account",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "amount",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "tokenURI",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "mint",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256[]",
+					"name": "ids",
+					"type": "uint256[]"
+				},
+				{
+					"internalType": "uint256[]",
+					"name": "amounts",
+					"type": "uint256[]"
+				},
+				{
+					"internalType": "bytes",
+					"name": "data",
+					"type": "bytes"
+				}
+			],
+			"name": "safeBatchTransferFrom",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "id",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "amount",
+					"type": "uint256"
+				},
+				{
+					"internalType": "bytes",
+					"name": "data",
+					"type": "bytes"
+				}
+			],
+			"name": "safeTransferFrom",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "operator",
+					"type": "address"
+				},
+				{
+					"internalType": "bool",
+					"name": "approved",
+					"type": "bool"
+				}
+			],
+			"name": "setApprovalForAll",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "setMarketAddress",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "bytes4",
+					"name": "interfaceId",
+					"type": "bytes4"
+				}
+			],
+			"name": "supportsInterface",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				}
+			],
+			"name": "uri",
+			"outputs": [
+				{
+					"internalType": "string",
+					"name": "",
+					"type": "string"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		}
+	]
+	contract1155 = new web3.eth.Contract(ABI1155, ADDRESS1155);
+ 
+
+	let contractMarket;
+	const ADDRESSMarket = "0xB301D28d1eE2243B18CFf7F4751d9D14BFdF6D78"
+	const ABIMarket = [
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				},
+				{
+					"indexed": false,
+					"internalType": "address",
+					"name": "buyer",
+					"type": "address"
+				}
+			],
+			"name": "BoughtNFT",
+			"type": "event"
+		},
+		{
+			"inputs": [],
+			"name": "acceptOwnership",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "owner",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "tokenUri",
+					"type": "string"
+				}
+			],
+			"name": "buyImage",
+			"outputs": [],
+			"stateMutability": "payable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "newAdmin",
+					"type": "address"
+				}
+			],
+			"name": "changeOwnership",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "tokenUri",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "quantity",
+					"type": "uint256"
+				}
+			],
+			"name": "mintAdmin",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "string",
+					"name": "tokenUri",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "quantity",
+					"type": "uint256"
+				}
+			],
+			"name": "mintUser",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "string",
+					"name": "tokenUri",
+					"type": "string"
+				}
+			],
+			"name": "removeFromSale",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "string",
+					"name": "tokenUri",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "price",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "quantity",
+					"type": "uint256"
+				}
+			],
+			"name": "setOnSale",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "amount",
+					"type": "uint256"
+				}
+			],
+			"name": "withdrawAccumlatedAmount",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "contract APT721",
+					"name": "erc721",
+					"type": "address"
+				},
+				{
+					"internalType": "contract APT1155",
+					"name": "erc1155",
+					"type": "address"
+				}
+			],
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "_addressAccumlatedAmount",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "_assetId1155",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "tokenType",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "url",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "biddingPrice",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "salePrice",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "quantityOnSale",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "quantityOnBidding",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "remainingQuantity",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "_assetId721",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "tokenType",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "url",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "biddingPrice",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "salePrice",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "quantityOnSale",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "quantityOnBidding",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "remainingQuantity",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "string",
+					"name": "",
+					"type": "string"
+				}
+			],
+			"name": "_uriId",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		}
+	]
+	contractMarket = new web3.eth.Contract(ABIMarket, ADDRESSMarket);
+ 
 
 let sLogin = "no"
 
@@ -133,6 +1140,50 @@ function signOutOfMetaMask() {
 }
 
 
+
+async function asset721Details() {
+	try {
+		var sAddress = document.getElementById("details721ofaddress").value;
+		contractMarket.methods._assetId721(sAddress).call(function (err, oBalance) {
+			getdetails721.innerText = oBalance
+			console.log(oBalance)
+		console.log("biddingPrice="+oBalance.biddingPrice)
+		console.log("quantityOnBidding="+oBalance.quantityOnBidding)
+		console.log("quantityOnSale="+oBalance.quantityOnSale)
+		console.log("remainingQuantity="+oBalance.remainingQuantity)
+		console.log("salePrice="+oBalance.salePrice)
+		console.log("tokenType="+oBalance.tokenType)
+		console.log("url="+oBalance.url)
+		})
+	} catch (err) {
+		console.log(err)
+			}
+}
+
+
+
+async function asset1155Details() {
+
+	try {
+		var sAddress = document.getElementById("details1155ofaddress").value;
+		contractMarket.methods._assetId1155(sAddress).call(function (err, oBalance) {
+			getdetails1155.innerText = oBalance
+			console.log("biddingPrice="+oBalance.biddingPrice)
+			console.log("quantityOnBidding="+oBalance.quantityOnBidding)
+			console.log("quantityOnSale="+oBalance.quantityOnSale)
+			console.log("remainingQuantity="+oBalance.remainingQuantity)
+			console.log("salePrice="+oBalance.salePrice)
+			console.log("tokenType="+oBalance.tokenType)
+			console.log("url="+oBalance.url)
+		})
+	} catch (err) {
+		console.log(err)
+	}
+
+
+}
+
+
 async function mintToken() {
 	if (sLogin == "no") {
 		mintTkn.innerText = "please login to continue";
@@ -148,28 +1199,227 @@ async function mintToken() {
 		// if (!checkAmount(nMetaData, mintTkn)) { return }
 		// if (!checkAddress(sAddress, mintTkn)) { return }
 
-		 mintTkn.innerText = ""
+		mintTkn.innerText = ""
 		let sAccounts = await web3.eth.getAccounts();
 		let sMsgsender = sAccounts[0];
 
-		let nGasUsed = await contract.methods.mintUser(sTokenUri, nQuantity)
+		let nGasUsed = await contractMarket.methods.mintUser(sTokenUri, nQuantity)
 			.estimateGas({ from: sMsgsender })
 		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
 
-		contract.methods.mintUser(sTokenUri, nQuantity).send({ from: sMsgsender })
+		contractMarket.methods.mintUser(sTokenUri, nQuantity).send({ from: sMsgsender })
 			.on('transactionHash', function (sHash) {
-				if (window.confirm('Your transation hash is'+sHash +"press ok to visit the transation details on ether scan")) {
-					window.open(`https://rinkeby.etherscan.io/tx/${sHash}`);
-			   };
-		  }).on('receipt', function (receipt) {
-			  receiptStatus(receipt);
-		  })
-		  .catch(function (err) {
-			  alert(err.message)
-		  }
-		  )
+				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
+					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
+				};
+			}).on('receipt', function (receipt) {
+				receiptStatus(receipt);
+			})
+			.catch(function (err) {
+				alert(err.message)
+			}
+			)
 
-	}	 catch (err) {
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+
+async function setOnSale() {
+	if (sLogin == "no") {
+		mintTkn.innerText = "please login to continue";
+		return console.log("please login to continue")
+	}
+
+	try {
+		let sTokenUri = document.getElementById("TokenUri").value;
+		let nPrice = document.getElementById("Price").value;
+		let nQuantity = document.getElementById("Quantity").value;
+
+		// setOnsale.innerText = "";
+
+		let sAccounts = await web3.eth.getAccounts();
+		let sMsgsender = sAccounts[0];
+
+		let nGasUsed = await contractMarket.methods.setOnSale(sTokenUri, nPrice, nQuantity)
+			.estimateGas({ from: sMsgsender })
+		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
+
+		contractMarket.methods.setOnSale(sTokenUri, nPrice, nQuantity).send({ from: sMsgsender })
+			.on('transactionHash', function (sHash) {
+				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
+					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
+				};
+			}).on('receipt', function (receipt) {
+				receiptStatus(receipt);
+			})
+			.catch(function (err) {
+				alert(err.message)
+			}
+			)
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+
+
+async function getMarket721() {
+	try {
+		let sResult = await contract721.methods.market().call();
+		MarketAddress.innerText = sResult;
+		console.log(sResult)
+		return sResult
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+async function getMarket1155() {
+	try {
+		let sResult = await contract1155.methods.market().call();
+		MarketAddress.innerText = sResult;
+		console.log(sResult)
+		return sResult
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+async function getId() {
+	try {
+		let sResult = await contract.methods.symbol().call();
+		tokenSymbol.innerText = sResult;
+		console.log(sResult)
+	} catch (err) {
+		error(err)
+	}
+}
+
+async function getId(){
+	try {
+		var sUri = document.getElementById("URI").value;
+		contractMarket.methods._uriId(sUri).call(function (err, id) {
+			console.log(id)
+			return id
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+async function getBalance(){
+	try {
+		var sAddress = document.getElementById("wallet").value;
+		contractMarket.methods._addressAccumlatedAmount(sAddress).call(function (err, id) {
+			console.log(id)
+			return id
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+
+
+async function approve721(){
+	try {
+
+		let sAccounts = await web3.eth.getAccounts();
+		let sMsgsender = sAccounts[0];
+		let sMarket = await getMarket721();
+		
+
+		let nGasUsed = await contract721.methods.setApprovalForAll(sMarket,true)
+			.estimateGas({ from: sMsgsender })
+		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
+
+		contract721.methods.setApprovalForAll(sMarket,true).send({ from: sMsgsender })
+			.on('transactionHash', function (sHash) {
+				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
+					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
+				};
+			}).on('receipt', function (receipt) {
+				receiptStatus(receipt);
+			})
+			.catch(function (err) {
+				alert(err.message)
+			}
+			)
+	} catch (err) {
+		console.log(err)
+	}
+
+}
+
+
+async function approve1155(){
+	try {
+
+		let sAccounts = await web3.eth.getAccounts();
+		let sMsgsender = sAccounts[0];
+		let sMarket = await getMarket1155();
+		
+
+		let nGasUsed = await contract1155.methods.setApprovalForAll(sMarket,true)
+			.estimateGas({ from: sMsgsender })
+		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
+
+		contract1155.methods.setApprovalForAll(sMarket,true).send({ from: sMsgsender })
+			.on('transactionHash', function (sHash) {
+				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
+					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
+				};
+			}).on('receipt', function (receipt) {
+				receiptStatus(receipt);
+			})
+			.catch(function (err) {
+				alert(err.message)
+			}
+			)
+	} catch (err) {
+		console.log(err)
+	}
+
+}
+
+async function buyNft() {
+
+	try {
+		let sOwner = document.getElementById("oowner").value;
+		console.log(sOwner)
+		let uri = document.getElementById("owner").value;
+		console.log(uri)
+		let nAmount = document.getElementById("Amount").value;
+		console.log(nAmount)
+		let sMarket= await getMarket721;
+
+
+		let sAccounts = await web3.eth.getAccounts();
+		let sMsgsender = sAccounts[0];
+
+		let nGasUsed = await contractMarket.methods.buyImage(sOwner, uri)
+			.estimateGas({ from: sMsgsender , to: sMarket,
+				value: web3.utils.toWei(nAmount.toString(), 'wei') })
+		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
+
+		await contractMarket.methods.buyImage(sOwner, uri)
+			.send({ from: sMsgsender , to: sMarket,
+				value: web3.utils.toWei(nAmount.toString(), 'wei') })
+			.on('transactionHash', function (sHash) {
+				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
+					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
+				};
+			}).on('receipt', function (receipt) {
+				receiptStatus(receipt);
+			})
+			.catch(function (err) {
+				alert(err.message)
+			}
+			)
+
+	} catch (err) {
 		console.log(err)
 	}
 }
@@ -178,14 +1428,12 @@ async function mintToken() {
 
 
 
-// function error(error) {
-// 	error = error.toString();
-// 	let sObjError = error.substring(error.indexOf("{"), error.lastIndexOf("}") + 1);
-// 	sObjError = JSON.parse(sObjError)
-// 	let sErrorMsg = sObjError.originalError.message;
-// 	let sErrMessage = sErrorMsg.substring(sErrorMsg.indexOf(":") + 1, sErrorMsg.length);
-// 	alert(sErrMessage)
-// }
+
+
+
+
+
+
 
 
 async function checkChange() {
@@ -248,7 +1496,7 @@ function loginCheck() {
 
 checkChange();
 
-function receiptStatus(receipt){
+function receiptStatus(receipt) {
 	if (receipt.status == true) {
 		alert(`You have approved ${sSpender} the amount of ${nAmount} token`);
 		console.log(receipt)
@@ -258,7 +1506,7 @@ function receiptStatus(receipt){
 }
 
 
-function receiptStatus(receipt){
+function receiptStatus(receipt) {
 	if (receipt.status == true) {
 		alert(`You have approved ${sSpender} the amount of ${nAmount} token`);
 		console.log(receipt)
