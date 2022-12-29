@@ -29,3 +29,16 @@ async function isApproved1155(){
 		console.log(err)
 	}
 }
+
+
+async function getOwner(sAddress){
+	try {
+		// var sAddress = document.getElementById("wallet").value;
+		contract721.methods.ownerOf(sAddress).call(function (err, owner) {
+			console.log(owner)
+			return owner
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
