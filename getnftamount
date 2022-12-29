@@ -1,0 +1,23 @@
+async function getAmount721(sAddress){
+	try {
+		// var sAddress = document.getElementById("wallet").value;
+		contract721.methods.balanceOf(sAddress).call(function (err, id) {
+			console.log(id)
+			return id
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+async function getAmount1155(sAddress,nId){
+	try {
+		// var sAddress = document.getElementById("wallet").value;
+		contractMarket.methods.balanceOf(sAddress,nId).call(function (err, id) {
+			console.log(id)
+			return id
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
