@@ -12,9 +12,9 @@ contract CommonMarket  {
         uint256 tokenType;
         string url;
         uint256 biddingPrice;
-        uint256 royaltyBidPrice;
+        uint256 royaltyBidShare;
         uint256 salePrice;
-        uint256 royaltySalePrice;
+        uint256 royaltySaleShare;
         uint256 quantityOnSale;
         uint256 quantityOnBidding;
         uint256 remainingQuantity;
@@ -26,15 +26,6 @@ contract CommonMarket  {
         address creator;
         uint256 royaltyPercentage;
     }
-
-    // struct ReSaleBidDetails{
-    //     string url;
-    //     uint256 salePrice;
-    //     uint256 biddingPrice;
-    //     uint256 quantityOnSale;
-    //     uint256 quantityOnBidding;
-    //     uint256 remainingQuantity;
-    // }
 
     APT721 private _erc721;
     APT1155 private _erc1155;
@@ -70,31 +61,6 @@ contract CommonMarket  {
         _erc1155.setMarketAddress();
     }
 
-
-
-    // function mintAdmin(
-    //     address to,
-    //     string memory tokenUri,
-    //     uint256 quantity
-    // ) external {
-    //     require(msg.sender==_admin ,"APT_Market: Only admin is allowed to mint");
-    //     require(quantity>0, "APT_Market: Invalid quantity");
-    //     require( _uriId[tokenUri] !=0 ,"APT_Market: Token uri already exists");
-        
-    //     // uint token;
-
-    //     if (quantity==1) {
-    //         tokenId721++;
-    //         _erc721.mint(to,tokenUri,tokenId721);
-    //         _uriId[tokenUri]=tokenId721;
-
-    //     } else {
-    //         tokenId1155++;
-    //        _erc1155.mint(to, quantity,tokenUri,tokenId1155);
-    //        _uriId[tokenUri]=tokenId1155;
-    //     }
-        
-    // }
 
 
     function mintUser(
@@ -154,7 +120,7 @@ contract CommonMarket  {
         
         if(keccak256(abi.encodePacked((_assetId721[tokenId].url))) == keccak256(abi.encodePacked((tokenUri)))) {
             //this means that token type is 721
-            // require ( msg.sender == _assetId721[tokenId].creator, "721:Only creator is allowed to call this function");
+            require ( msg.sender == royaltyDeatils[tokenUri].creator, "721:Only creator is allowed to call this function");
 
             require(_assetId721[tokenId].quantityOnSale == 0,"721:sale created alredy ");
             require(
@@ -170,9 +136,9 @@ contract CommonMarket  {
         }else {
             //this means that token type is 1155
             // require ( msg.sender == _assetId1155[tokenId].creator, "1155:Only creator is allowed to call this function");
-            
+
+            require ( msg.sender == royaltyDeatils[tokenUri].creator, "1155:Only creator is allowed to call this function");
             require(_assetId1155[tokenId].quantityOnSale == 0,"1155:sale created alredy ");
-            
             require(
                 quantity <= _assetId1155[tokenId].remainingQuantity,
                 "1155:No enough tokens left for sale"
@@ -195,6 +161,8 @@ contract CommonMarket  {
         uint256 price,
         uint256 quantity) external {
         uint256 tokenId= royaltyDeatils[tokenUri].tokenId;
+
+
         require(price > 0, "Market sale:please set a valid price");
         require( royaltyDeatils[tokenUri].Type == 721  || royaltyDeatils[tokenUri].Type == 1155 , "invalid token URI");
 
@@ -210,27 +178,36 @@ contract CommonMarket  {
                 msg.sender == _erc721.ownerOf(tokenId)
             , "721:Only owner is allowed to call this function" );
 
-            require(  _reSaleAssetId[toknUri][msg.sender].quantityOnSale == 0,"721:sale created alredy ");
+            require(  _reSaleAssetId[tokenUri][msg.sender].quantityOnSale == 0,"721:sale created alredy");
+
+        }
+    else{
+          require(  _reSaleAssetId[tokenUri][msg.sender].quantityOnSale == 0,"1155:sale created alredy ");
+          require ( 
+                royaltyDeatils[tokenUri].creator != msg.sender
+            , "1155:Creator is not allowed to call this function" );
             
+            require ( 
+                quantity <= _erc1155.balanceOf(msg.sender,tokenId)
+            , "1155:No enough token Balance of function caller" );
 
-    //     _assetId721[tokenId].quantityOnSale += quantity;
-    //     _assetId721[tokenId].remainingQuantity -= quantity;
-    //     _assetId721[tokenId].salePrice = price;
+            require(
+                quantity <= _assetId1155[tokenId].remainingQuantity,
+                "1155:No enough tokens left for sale"
+            );
+
+        }
+
+        _reSaleAssetId[tokenUri][msg.sender].quantityOnSale += quantity;
+        _reSaleAssetId[tokenUri][msg.sender].remainingQuantity -= quantity;
+        _reSaleAssetId[tokenUri][msg.sender].salePrice = price;
+        _reSaleAssetId[tokenUri][msg.sender].royaltySaleShare = ((price*royaltyDeatils[tokenUri].royaltyPercentage)/100); 
+        
+    }
 
 
-    //     }
 
-    //     }
-    // else{
-
-//         }
-.
-
-        }}
-
-
-
-     function removeFromSale( string memory tokenUri) external {
+    function removeFromSale( string memory tokenUri) external {
          uint256 tokenId= royaltyDeatils[tokenUri].tokenId;
           require( _assetId721[tokenId].tokenType == 721 || _assetId1155[tokenId].tokenType == 1155 , "invalid token URI");
               if(keccak256(abi.encodePacked((_assetId721[tokenId].url))) == keccak256(abi.encodePacked((tokenUri)))) {
@@ -250,52 +227,103 @@ contract CommonMarket  {
         }
 
 
+    function updateUser(string memory uri , uint _type , uint quantity, address account )internal {
+        AssetDetails memory newAsset= _reSaleAssetId[uri][account];
+            newAsset.url= uri;
+            newAsset.tokenType= _type;
+            newAsset.remainingQuantity +=quantity;
+            _reSaleAssetId[uri][account] = newAsset;
+
+        }
+
       //reentracy attack proof
     function buyImage(
         address owner,
         string memory tokenUri
     ) external payable {
-        uint tokenId=royaltyDeatils[tokenUri].tokenId;
-        require( _assetId721[tokenId].tokenType == 721 || _assetId1155[tokenId].tokenType == 1155 , "invalid token ID");
-        AssetDetails memory newAsset= _reSaleAssetId[toknUri][msg.sender];           
-           if(keccak256(abi.encodePacked((_assetId721[tokenId].url))) == keccak256(abi.encodePacked((tokenUri)))) {
-            uint256 saleQuantity = _assetId721[tokenId].quantityOnSale;
-            require(saleQuantity != 0, "This token has not been listed on sale");
-            require(
-            msg.value == _assetId721[tokenId].salePrice+500,
-            "please enter valid price to buy nft "
-             );
+        RoyaltyInfo memory royaltyInfo=royaltyDeatils[tokenUri];
+        uint tokenId=royaltyInfo.tokenId;
+        address creator=royaltyInfo.creator;
+        AssetDetails memory reSaleAsset =  _reSaleAssetId[tokenUri][owner];
+        AssetDetails memory creator721Asset =_assetId721[tokenId];
+        AssetDetails memory creator1155Asset = _assetId1155[tokenId];
 
-            saleQuantityCheck721(tokenId);
-            _addressAccumlatedAmount[owner] += msg.value;
+        if(owner==creator){
+
+            require( creator721Asset.tokenType ==721||creator1155Asset.tokenType==1155,
+                    "invalid token ID");
+    
+           if(creator721Asset.tokenType==721) {
+
+                require(creator721Asset.quantityOnSale != 0, "This token has not been listed on sale");
+                require(
+                msg.value == creator721Asset.salePrice,
+                "please enter valid price to buy nft "
+                );
+
+                saleQuantityCheck721(tokenUri,owner);
+                _addressAccumlatedAmount[owner] += msg.value;
+                _sendERC721(owner, msg.sender, tokenId);
+
+                updateUser(tokenUri, 721, 1, msg.sender);
+            }
+           else{
+                uint256 saleQuantity = creator1155Asset.quantityOnSale;
+                require(saleQuantity != 0, "This token has not been listed on sale");
+                require(
+                msg.value ==creator1155Asset.salePrice,
+                "please enter valid price to buy nft "
+                );
+                
+                saleQuantityCheck1155(tokenUri,owner);
+                _addressAccumlatedAmount[owner] += msg.value;
+                updateUser(tokenUri, 1155, saleQuantity, msg.sender); 
+                _sendERC1155(owner, msg.sender, tokenId, saleQuantity);
+        
+           }
+         
+            emit BoughtNFT(tokenId, msg.sender);
+        }else{
+                require(creator!=msg.sender,"Market Buy:creator buyback not allowed"); 
+                require( reSaleAsset.tokenType !=0,"invalid token ID");
+    
+           if (reSaleAsset.tokenType == 721 ) {
+            uint256 saleQuantity =reSaleAsset.quantityOnSale;
+            require(saleQuantity != 0, "This token has not been listed on sale");
+            require
+            (msg.value == reSaleAsset.salePrice + reSaleAsset.royaltySaleShare,
+            "please enter valid price to buy nft");
+
+            saleQuantityCheck721(tokenUri,owner);
+            _addressAccumlatedAmount[owner] += reSaleAsset.salePrice;
+            _addressAccumlatedAmount[creator] += reSaleAsset.royaltySaleShare;
             _sendERC721(owner, msg.sender, tokenId);
 
-            newAsset.url= tokenUri;
-            newAsset.tokenType=721;
-            newAsset.remainingQuantity =1
-
+            updateUser(tokenUri, 721, 1, msg.sender);
+        
            }
            else{
-            uint256 saleQuantity = _assetId1155[tokenId].quantityOnSale;
-            require(saleQuantity != 0, "This token has not been listed on sale");
-            require(
-            msg.value == _assetId1155[tokenId].salePrice,
-            "please enter valid price to buy nft "
-             );
+            require(reSaleAsset.quantityOnSale != 0, "This token has not been listed on sale");
+            require
+            (msg.value == reSaleAsset.salePrice + reSaleAsset.royaltySaleShare,
+            "please enter valid price to buy nft");
             
-             saleQuantityCheck1155(tokenId);
-            _addressAccumlatedAmount[owner] += msg.value; 
-            _sendERC1155(owner, msg.sender, tokenId, saleQuantity);
+            saleQuantityCheck1155(tokenUri,owner);
             
-            newAsset.url= tokenUri;
-            newAsset.tokenType=1155;
-            newAsset.remainingQuantity +=saleQuantity;
-           }
-           _reSaleAssetId[toknUri][msg.sender]= newAsset;
-           
+            _addressAccumlatedAmount[owner] += reSaleAsset.salePrice;
+            _addressAccumlatedAmount[creator] += reSaleAsset.royaltySaleShare;
+
+            _sendERC1155(owner, msg.sender, tokenId, reSaleAsset.quantityOnSale );
+            
+            updateUser(tokenUri, 1155, reSaleAsset.quantityOnSale , msg.sender);
+           }    
         emit BoughtNFT(tokenId, msg.sender);
 
     }
+    }
+
+
+
 
     function withdrawAccumlatedAmount(uint256 amount) external {
         require(amount > 0, "Please withdraw some amount");
@@ -310,34 +338,83 @@ contract CommonMarket  {
 
       //chnge the remaining quantity
    
-    function saleQuantityCheck721(uint256 tokenId) private {
+    function saleQuantityCheck721(string memory uri,address checkAddress) private {
         //this is for reentrency data updating
-        if (
-            _assetId721[tokenId].remainingQuantity +
-                _assetId721[tokenId].quantityOnBidding ==
+        RoyaltyInfo memory tokenDetails = royaltyDeatils[uri];     
+        uint tokenId = tokenDetails.tokenId;
+    require(tokenDetails.Type==721,"Wrong update function called");
+    if(checkAddress==tokenDetails.creator){
+        //CreatorAsset
+         AssetDetails memory creatorSaleAsset= _assetId721[tokenId];
+            
+            if (
+            creatorSaleAsset.remainingQuantity +
+                creatorSaleAsset.quantityOnBidding ==
             0
         ) {
             delete _assetId721[tokenId];
 
         } else {
-            _assetId721[tokenId].quantityOnSale = 0;
-                _assetId721[tokenId].salePrice =0;
+                creatorSaleAsset.quantityOnSale = 0;
+                creatorSaleAsset.salePrice =0;
+                _assetId721[tokenId]=creatorSaleAsset;
+        }
+        }
+    else{
+         resaleUpdate(uri,checkAddress);
         }
     }
 
-    function saleQuantityCheck1155(uint256 tokenId) private {
-        //this is for reentrency data updating
-        if (
-            _assetId1155[tokenId].remainingQuantity +
-                _assetId1155[tokenId].quantityOnBidding ==
-            0
-        ) {
-             delete _assetId1155[tokenId];
-        } else {
-            _assetId1155[tokenId].quantityOnSale = 0;
-             _assetId1155[tokenId].salePrice=0;
-         }
+
+
+    function saleQuantityCheck1155(string memory uri,address checkAddress) private {
+        RoyaltyInfo memory tokenDetails = royaltyDeatils[uri];     
+        uint tokenId = tokenDetails.tokenId;
+        require(tokenDetails.Type==1155,"Wrong update function called");
+
+        if(checkAddress==tokenDetails.creator){
+            //CreatorAsset
+            AssetDetails memory creatorSaleAsset= _assetId1155[tokenId];
+                
+                if (
+                creatorSaleAsset.remainingQuantity +
+                    creatorSaleAsset.quantityOnBidding ==
+                0
+            ) {
+                delete _assetId721[tokenId];
+
+            } else {
+                    creatorSaleAsset.quantityOnSale = 0;
+                    creatorSaleAsset.salePrice =0;
+                    _assetId1155[tokenId]=creatorSaleAsset;
+            }
+        }
+        else{
+                resaleUpdate(uri,checkAddress);
+        }
     }
+
+
+    function resaleUpdate(string memory uri,address checkAddress) private {
+         AssetDetails memory reSaleAsset =  _reSaleAssetId[uri][checkAddress];
+
+            if (
+                reSaleAsset.remainingQuantity +
+                reSaleAsset.quantityOnBidding ==
+                0
+        ) {
+                delete _reSaleAssetId[uri][checkAddress];
+
+        } else {
+                reSaleAsset.quantityOnSale = 0;
+                reSaleAsset.salePrice =0;
+                reSaleAsset.royaltySaleShare=0;
+                _reSaleAssetId[uri][checkAddress]=reSaleAsset;
+        }
+
+    }
+
+    
     
 
     function onlyOwner(
