@@ -1140,7 +1140,7 @@ async function royaltyDetails() {
 	try {
 		
 
-		contractMarket.methods.royaltyDetails(sTokenUri).call(function (err, oBalance) {
+		contractMarket.methods.royaltyDeatils(sTokenUri).call(function (err, oBalance) {
 		
 			console.log(oBalance)
 		console.log("tokenId="+oBalance.tokenId)
