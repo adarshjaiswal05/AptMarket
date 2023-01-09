@@ -1,7 +1,7 @@
 var web3 = new Web3(window.ethereum);
 
 	let contract721;
-	const ADDRESS721 = "0x73B78FF4F019a447A76F85c06A2963db6d96Be95"
+	const ADDRESS721 = "0x54e0A46692f6D76f595276145a5e976F8020DC62"
 	const ABI721 = [
 		{
 			"inputs": [],
@@ -400,7 +400,7 @@ var web3 = new Web3(window.ethereum);
 
 
 	let contract1155;
-	const ADDRESS1155 = "0x96dD14C42a54506811f7075BB6C3bacCdB0D4256"
+	const ADDRESS1155 = "0x4f88EaC6d7E0e24Be261bEd012E4D61867BD05a9"
 	const ABI1155 = [
 		{
 			"inputs": [],
@@ -785,8 +785,24 @@ var web3 = new Web3(window.ethereum);
  
 
 	let contractMarket;
-	const ADDRESSMarket = "0xB301D28d1eE2243B18CFf7F4751d9D14BFdF6D78"
+	const ADDRESSMarket = "0x89232F9c112C50d899b43EF1727d5725B7ea9895"
 	const ABIMarket = [
+		{
+			"inputs": [
+				{
+					"internalType": "contract APT721",
+					"name": "erc721",
+					"type": "address"
+				},
+				{
+					"internalType": "contract APT1155",
+					"name": "erc1155",
+					"type": "address"
+				}
+			],
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		},
 		{
 			"anonymous": false,
 			"inputs": [
@@ -807,10 +823,22 @@ var web3 = new Web3(window.ethereum);
 			"type": "event"
 		},
 		{
-			"inputs": [],
-			"name": "acceptOwnership",
-			"outputs": [],
-			"stateMutability": "nonpayable",
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "_addressAccumlatedAmount",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
 			"type": "function"
 		},
 		{
@@ -834,23 +862,76 @@ var web3 = new Web3(window.ethereum);
 		{
 			"inputs": [
 				{
+					"internalType": "string",
+					"name": "tokenUri",
+					"type": "string"
+				},
+				{
 					"internalType": "address",
-					"name": "newAdmin",
+					"name": "owner",
 					"type": "address"
 				}
 			],
-			"name": "changeOwnership",
-			"outputs": [],
-			"stateMutability": "nonpayable",
+			"name": "getAsset",
+			"outputs": [
+				{
+					"components": [
+						{
+							"internalType": "uint256",
+							"name": "tokenType",
+							"type": "uint256"
+						},
+						{
+							"internalType": "string",
+							"name": "url",
+							"type": "string"
+						},
+						{
+							"internalType": "uint256",
+							"name": "biddingPrice",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "royaltyBidShare",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "salePrice",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "royaltySaleShare",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "quantityOnSale",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "quantityOnBidding",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint256",
+							"name": "remainingQuantity",
+							"type": "uint256"
+						}
+					],
+					"internalType": "struct CommonMarket.AssetDetails",
+					"name": "asset",
+					"type": "tuple"
+				}
+			],
+			"stateMutability": "view",
 			"type": "function"
 		},
 		{
 			"inputs": [
-				{
-					"internalType": "address",
-					"name": "to",
-					"type": "address"
-				},
 				{
 					"internalType": "string",
 					"name": "tokenUri",
@@ -860,23 +941,10 @@ var web3 = new Web3(window.ethereum);
 					"internalType": "uint256",
 					"name": "quantity",
 					"type": "uint256"
-				}
-			],
-			"name": "mintAdmin",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "string",
-					"name": "tokenUri",
-					"type": "string"
 				},
 				{
 					"internalType": "uint256",
-					"name": "quantity",
+					"name": "royaltiesPercentage",
 					"type": "uint256"
 				}
 			],
@@ -891,11 +959,50 @@ var web3 = new Web3(window.ethereum);
 					"internalType": "string",
 					"name": "tokenUri",
 					"type": "string"
+				},
+				{
+					"internalType": "address",
+					"name": "owner",
+					"type": "address"
 				}
 			],
 			"name": "removeFromSale",
 			"outputs": [],
 			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "string",
+					"name": "",
+					"type": "string"
+				}
+			],
+			"name": "royaltyDeatils",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "tokenId",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "Type",
+					"type": "uint256"
+				},
+				{
+					"internalType": "address",
+					"name": "creator",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "royaltyPercentage",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
 			"type": "function"
 		},
 		{
@@ -932,158 +1039,6 @@ var web3 = new Web3(window.ethereum);
 			"name": "withdrawAccumlatedAmount",
 			"outputs": [],
 			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "contract APT721",
-					"name": "erc721",
-					"type": "address"
-				},
-				{
-					"internalType": "contract APT1155",
-					"name": "erc1155",
-					"type": "address"
-				}
-			],
-			"stateMutability": "nonpayable",
-			"type": "constructor"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "",
-					"type": "address"
-				}
-			],
-			"name": "_addressAccumlatedAmount",
-			"outputs": [
-				{
-					"internalType": "uint256",
-					"name": "",
-					"type": "uint256"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "uint256",
-					"name": "",
-					"type": "uint256"
-				}
-			],
-			"name": "_assetId1155",
-			"outputs": [
-				{
-					"internalType": "uint256",
-					"name": "tokenType",
-					"type": "uint256"
-				},
-				{
-					"internalType": "string",
-					"name": "url",
-					"type": "string"
-				},
-				{
-					"internalType": "uint256",
-					"name": "biddingPrice",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "salePrice",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "quantityOnSale",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "quantityOnBidding",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "remainingQuantity",
-					"type": "uint256"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "uint256",
-					"name": "",
-					"type": "uint256"
-				}
-			],
-			"name": "_assetId721",
-			"outputs": [
-				{
-					"internalType": "uint256",
-					"name": "tokenType",
-					"type": "uint256"
-				},
-				{
-					"internalType": "string",
-					"name": "url",
-					"type": "string"
-				},
-				{
-					"internalType": "uint256",
-					"name": "biddingPrice",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "salePrice",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "quantityOnSale",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "quantityOnBidding",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "remainingQuantity",
-					"type": "uint256"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "string",
-					"name": "",
-					"type": "string"
-				}
-			],
-			"name": "_uriId",
-			"outputs": [
-				{
-					"internalType": "uint256",
-					"name": "",
-					"type": "uint256"
-				}
-			],
-			"stateMutability": "view",
 			"type": "function"
 		}
 	]
@@ -1160,6 +1115,44 @@ async function asset721Details() {
 			}
 }
 
+async function assetDetails() {
+	try {
+		var sTokenUri = document.getElementById("uri").value;
+		var sAddress = document.getElementById("owner").value
+
+		contractMarket.methods.getAsset(sTokenUri,sAddress).call(function (err, oBalance) {
+			// getdetails721.innerText = oBalance
+			console.log(oBalance)
+		console.log("biddingPrice="+oBalance.biddingPrice)
+		console.log("quantityOnBidding="+oBalance.quantityOnBidding)
+		console.log("quantityOnSale="+oBalance.quantityOnSale)
+		console.log("remainingQuantity="+oBalance.remainingQuantity)
+		console.log("salePrice="+oBalance.salePrice)
+		console.log("tokenType="+oBalance.tokenType)
+		console.log("url="+oBalance.url)
+		})
+	} catch (err) {
+		console.log(err)
+			}
+}
+
+async function royaltyDetails() {
+	try {
+		
+
+		contractMarket.methods.royaltyDetails(sTokenUri).call(function (err, oBalance) {
+		
+			console.log(oBalance)
+		console.log("tokenId="+oBalance.tokenId)
+		console.log("Type="+oBalance.Type)
+		console.log("creator="+oBalance.creator)
+		console.log("royaltyPercentage="+oBalance.royaltyPercentage)
+		})
+	} catch (err) {
+		console.log(err)
+			}
+}
+
 
 
 async function asset1155Details() {
@@ -1193,6 +1186,8 @@ async function mintToken() {
 	try {
 		let sTokenUri = document.getElementById("tokenuri").value;
 		let nQuantity = document.getElementById("quantity").value;
+		let nRoyalty = document.getElementById("royalty").value;
+
 
 		// if (!checkInput(sAddress, mintTkn)) { return }
 		// if (!checkInput(nMetaData, mintTkn)) { return }
@@ -1203,11 +1198,11 @@ async function mintToken() {
 		let sAccounts = await web3.eth.getAccounts();
 		let sMsgsender = sAccounts[0];
 
-		let nGasUsed = await contractMarket.methods.mintUser(sTokenUri, nQuantity)
+		let nGasUsed = await contractMarket.methods.mintUser(sTokenUri, nQuantity,nRoyalty)
 			.estimateGas({ from: sMsgsender })
 		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
 
-		contractMarket.methods.mintUser(sTokenUri, nQuantity).send({ from: sMsgsender })
+		contractMarket.methods.mintUser(sTokenUri, nQuantity,nRoyalty).send({ from: sMsgsender })
 			.on('transactionHash', function (sHash) {
 				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
 					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
@@ -1315,6 +1310,71 @@ async function getBalance(){
 		contractMarket.methods._addressAccumlatedAmount(sAddress).call(function (err, id) {
 			console.log(id)
 			return id
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+async function getAmount721(sAddress){
+	try {
+		// var sAddress = document.getElementById("wallet").value;
+		contract721.methods.balanceOf(sAddress).call(function (err, id) {
+			console.log(id)
+			return id
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+async function withdrawAccumlatedAmount(nAmount){
+	try {
+		
+		let sAccounts = await web3.eth.getAccounts();
+		let sMsgsender = sAccounts[0];
+
+		let nGasUsed = await contractMarket.methods.withdrawAccumlatedAmount(sTokenUri, nQuantity)
+			.estimateGas({ from: sMsgsender })
+		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
+
+		contractMarket.methods.withdrawAccumlatedAmount(nAmount).send({ from: sMsgsender })
+			.on('transactionHash', function (sHash) {
+				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
+					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
+				};
+			}).on('receipt', function (receipt) {
+				receiptStatus(receipt);
+			})
+			.catch(function (err) {
+				alert(err.message)
+			}
+			)
+
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+async function getAmount1155(sAddress,nId){
+	try {
+		// var sAddress = document.getElementById("wallet").value;
+		contractMarket.methods.balanceOf(sAddress,nId).call(function (err, id) {
+			console.log(id)
+			return id
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+
+async function getOwner(sAddress){
+	try {
+		// var sAddress = document.getElementById("wallet").value;
+		contract721.methods.ownerOf(sAddress).call(function (err, owner) {
+			console.log(owner)
+			return owner
 		})
 	} catch (err) {
 		console.log(err)
@@ -1456,6 +1516,35 @@ async function buyNft() {
 	}
 }
 
+async function removeFromSale(uri) {
+
+	try {
+		let sAccounts = await web3.eth.getAccounts();
+		let sMsgsender = sAccounts[0];
+
+		let nGasUsed = await contractMarket.methods.removeFromSale(uri)
+			.estimateGas({ from: sMsgsender })
+		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
+
+		await contractMarket.methods.removeFromSale(uri)
+			.send({ from: sMsgsender })
+			.on('transactionHash', function (sHash) {
+				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
+					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
+				};
+			}).on('receipt', function (receipt) {
+				receiptStatus(receipt);
+			})
+			.catch(function (err) {
+				alert(err.message)
+			}
+			)
+
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 
 
 
@@ -1546,7 +1635,4 @@ function receiptStatus(receipt) {
 		alert('Transaction reverted due to some technical issues.')
 	}
 }
-
-
-
 
