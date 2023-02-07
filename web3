@@ -1,7 +1,7 @@
 var web3 = new Web3(window.ethereum);
 
 	let contract721;
-	const ADDRESS721 = "0x08C72f4f108224590795aa67a33528ec40611fA7"
+	const ADDRESS721 = "0xA57e15d7Fee8aa34ca8e212878248D7C3aa42e22"
 	const ABI721 = [
 	{
 		"inputs": [],
@@ -400,8 +400,8 @@ var web3 = new Web3(window.ethereum);
 
 
 	let contract1155;
-	const ADDRESS1155 = "0x195b70b39fCD2e1802D567763eD4e27344430Ae4"
-	const ABI1155 = [
+	const ADDRESS1155 = "0x25e7E348d9Eb47b3378b3E72C7E5E58D6adeC353"
+	const ABI1155 =[
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -431,6 +431,125 @@ var web3 = new Web3(window.ethereum);
 		],
 		"name": "ApprovalForAll",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "tokenURI",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "mint",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "ids",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "amounts",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			}
+		],
+		"name": "safeBatchTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			}
+		],
+		"name": "safeTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "setApprovalForAll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "setMarketAddress",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -626,125 +745,6 @@ var web3 = new Web3(window.ethereum);
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "account",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "tokenURI",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "mint",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "ids",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "amounts",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "bytes",
-				"name": "data",
-				"type": "bytes"
-			}
-		],
-		"name": "safeBatchTransferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "id",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bytes",
-				"name": "data",
-				"type": "bytes"
-			}
-		],
-		"name": "safeTransferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "operator",
-				"type": "address"
-			},
-			{
-				"internalType": "bool",
-				"name": "approved",
-				"type": "bool"
-			}
-		],
-		"name": "setApprovalForAll",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "setMarketAddress",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "bytes4",
 				"name": "interfaceId",
 				"type": "bytes4"
@@ -785,7 +785,7 @@ var web3 = new Web3(window.ethereum);
  
 
 	let contractMarket;
-	const ADDRESSMarket = "0x0e65A10d60f3a2483C8FB79532336BB86B871d99"
+	const ADDRESSMarket = "0x5fb469236dE3C3F99dF0cD86E683d6885cA876a2"
 	const ABIMarket =[
 	{
 		"inputs": [
@@ -1026,6 +1026,32 @@ var web3 = new Web3(window.ethereum);
 		"name": "setOnSale",
 		"outputs": [],
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "tokenId1155",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "tokenId721",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
