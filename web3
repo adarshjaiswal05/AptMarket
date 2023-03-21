@@ -785,7 +785,7 @@ var web3 = new Web3(window.ethereum);
  
 
 	let contractMarket;
-	const ADDRESSMarket = "0xb3066b0bDB95f7f8f58C9f0BdA32C9F37CCECE19"
+	const ADDRESSMarket = "0x1b7E8fC97186033BbEC36A85b50F00eE5524643E"
 	const ABIMarket =[
 	{
 		"inputs": [
@@ -887,6 +887,24 @@ var web3 = new Web3(window.ethereum);
 				"internalType": "string",
 				"name": "tokenUri",
 				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "bidder",
+				"type": "address"
+			}
+		],
+		"name": "rejectBid",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "tokenUri",
+				"type": "string"
 			}
 		],
 		"name": "removeFromBidding",
@@ -962,6 +980,19 @@ var web3 = new Web3(window.ethereum);
 			}
 		],
 		"name": "withdrawAccumlatedAmount",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "tokenUri",
+				"type": "string"
+			}
+		],
+		"name": "withdrawbid",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
