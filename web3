@@ -1430,11 +1430,13 @@ async function removeFromBidding(uri) {
 		let sMsgsender = sAccounts[0];
 
 		let nGasUsed = await contractMarket.methods.bidAsset(owner,uri)
-			.estimateGas({ from: sMsgsender })
+			.estimateGas({ from: sMsgsender , to: sMarket,
+				value: web3.utils.toWei(nAmount.toString(), 'wei') })
 		alert("gas used for this transation is " + nGasUsed + " click on confirm in metamask to continue")
 
 		await contractMarket.methods.bidAsset(owner,uri)
-			.send({ from: sMsgsender })
+			.send({ from: sMsgsender , to: sMarket,
+				value: web3.utils.toWei(nAmount.toString(), 'wei') })
 			.on('transactionHash', function (sHash) {
 				if (window.confirm('Your transation hash is' + sHash + "press ok to visit the transation details on ether scan")) {
 					window.open(`https://goerli.etherscan.io/tx/${sHash}`);
@@ -1450,6 +1452,16 @@ async function removeFromBidding(uri) {
 	} catch (err) {
 		console.log(err)
 	}
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
 	
 	async function rejectBid(uri,bidderAddress) {
 
